@@ -1,0 +1,17 @@
+{
+  "name": "devflow-app",
+  "version": "1.0.0",
+  "description": "Sample app deployed by the DevFlow CI/CD pipeline",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}

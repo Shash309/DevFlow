@@ -1,0 +1,11 @@
+node_modules/
+coverage/
+*.log
+.env
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+# Ansible
+*.retry
