@@ -1,0 +1,24 @@
+---
+# One env file per environment; the Jenkinsfile runs each container with --env-file.
+- name: Create app root
+  ansible.builtin.file:
+    path: "{{ app_root }}"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+
+- name: Write per-environment env files
+  ansible.builtin.copy:
+    dest: "{{ app_root }}/{{ item.name }}.env"
+    owner: jenkins
+    group: jenkins
+    mode: "0640"
+    content: |
+      APP_ENV={{ item.name }}
+      PORT={{ app_container_port }}
+      HOST_PORT={{ item.port }}
+      GIT_BRANCH={{ item.branch }}
+  loop: "{{ environments }}"
+  loop_control:
+    label: "{{ item.name }} ({{ item.branch }} -> :{{ item.port }})"

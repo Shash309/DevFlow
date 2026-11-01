@@ -1,0 +1,48 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "metrics": {
+    "namespace": "DevFlow",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
+    "metrics_collected": {
+      "cpu": {
+        "measurement": ["cpu_usage_idle", "cpu_usage_user", "cpu_usage_system"],
+        "totalcpu": true
+      },
+      "mem": {
+        "measurement": ["mem_used_percent"]
+      },
+      "swap": {
+        "measurement": ["swap_used_percent"]
+      },
+      "disk": {
+        "measurement": ["used_percent"],
+        "resources": ["/"]
+      }
+    }
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/syslog",
+            "log_group_name": "{{ cloudwatch_log_group_prefix }}/system",
+            "log_stream_name": "{instance_id}",
+            "retention_in_days": {{ cloudwatch_log_retention_days }}
+          },
+          {
+            "file_path": "/var/lib/docker/containers/*/*-json.log",
+            "log_group_name": "{{ cloudwatch_log_group_prefix }}/containers",
+            "log_stream_name": "{instance_id}",
+            "retention_in_days": {{ cloudwatch_log_retention_days }}
+          }
+        ]
+      }
+    }
+  }
+}

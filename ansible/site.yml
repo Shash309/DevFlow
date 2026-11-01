@@ -1,0 +1,13 @@
+---
+# Configures the DevFlow EC2 host created by Terraform:
+# base packages + swap, Docker, Jenkins (Java 17), CloudWatch agent, app environment dirs.
+- name: Configure DevFlow host
+  hosts: devflow
+  become: true
+
+  roles:
+    - common
+    - docker
+    - jenkins
+    - cloudwatch
+    - app_env
