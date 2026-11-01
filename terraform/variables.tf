@@ -52,3 +52,24 @@ variable "app_ports" {
     production  = 3004
   }
 }
+
+variable "alert_email" {
+  description = "Email that receives CloudWatch alarm notifications (leave empty to skip)"
+  type        = string
+  default     = ""
+}
+
+variable "cpu_alarm_threshold" {
+  type    = number
+  default = 80
+}
+
+variable "memory_alarm_threshold" {
+  type    = number
+  default = 85
+}
+
+variable "disk_alarm_threshold" {
+  type    = number
+  default = 85
+}

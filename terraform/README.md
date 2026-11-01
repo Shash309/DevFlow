@@ -6,6 +6,8 @@ Provisions on AWS (default VPC):
 - Security group: SSH from `admin_cidr` only, Jenkins `8080`, app ports `3001-3004`
 - IAM role + instance profile (CloudWatch agent, read/write to the artifacts bucket)
 - S3 artifacts bucket (versioned, private)
+- CloudWatch: `devflow` dashboard, alarms for CPU > 80%, memory > 85%, disk > 85% and failed status checks,
+  an SNS topic that emails `alert_email`, and a container-error log metric
 - `../ansible/inventory.ini`, generated for the Ansible step
 
 State lives in a separate S3 bucket created by `bootstrap/`.
