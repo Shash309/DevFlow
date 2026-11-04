@@ -1,0 +1,22 @@
+---
+project_name: devflow
+timezone: Asia/Kolkata
+
+# t3.small has 2 GB RAM; swap keeps Jenkins + 4 containers from being OOM-killed
+swap_size_mb: 2048
+
+java_package: openjdk-17-jre-headless
+jenkins_port: 8080
+
+app_root: /opt/devflow
+app_container_port: 3000
+
+# Must match terraform/variables.tf app_ports and the Jenkinsfile branch mapping
+environments:
+  - { name: development, branch: develop, port: 3001 }
+  - { name: testing,     branch: testing, port: 3002 }
+  - { name: staging,     branch: staging, port: 3003 }
+  - { name: production,  branch: main,    port: 3004 }
+
+cloudwatch_log_group_prefix: /devflow
+cloudwatch_log_retention_days: 14

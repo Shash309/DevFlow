@@ -1,0 +1,19 @@
+---
+# Credentials come from the EC2 instance role created by Terraform.
+- name: Install CloudWatch agent
+  ansible.builtin.apt:
+    deb: https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+    state: present
+
+- name: Write CloudWatch agent config
+  ansible.builtin.template:
+    src: amazon-cloudwatch-agent.json.j2
+    dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+    mode: "0644"
+  notify: Reload cloudwatch agent
+
+- name: Start and enable CloudWatch agent
+  ansible.builtin.service:
+    name: amazon-cloudwatch-agent
+    state: started
+    enabled: true
