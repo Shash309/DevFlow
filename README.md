@@ -330,7 +330,7 @@ Push to `develop` and check that `http://<ip>:3001` shows *Environment: developm
 | 3 | Ansible playbook | ✅ Written, `--syntax-check` passes | `feature/ansible` |
 | 4 | Jenkinsfile + setup docs | ✅ Written | `feature/jenkins` |
 | 5 | CloudWatch alarms, dashboard, SNS | ✅ Written, `terraform validate` passes | `feature/terraform` (+ agent config on `feature/ansible`) |
-| 6 | Apply to AWS, end-to-end demo | ⏳ Pending AWS credentials | – |
+| 6 | Apply to AWS, end-to-end demo | ✅ Done: all 4 environments deployed by Jenkins (ports 3001–3004) | `terraform/`, `ansible/`, `Jenkinsfile` |
 
 Not yet verified: `terraform apply` against AWS, an Ansible run on a real host, the pipeline in a running Jenkins,
 and the Docker image build (only tested via `npm test`).
