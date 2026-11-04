@@ -197,13 +197,13 @@ versioned, AES-256 encrypted and blocks all public access. The bootstrap config 
 |---|---|
 | EC2 instance | Ubuntu 22.04 (latest Canonical AMI), `t3.small`, 20 GB encrypted gp3, IMDSv2 required |
 | Elastic IP | Fixed public IP, so the GitHub webhook URL survives stop/start |
-| Security group | SSH `22` from `admin_cidr` only · Jenkins `8080` · app ports `3001–3004` |
+| Security group | SSH `22` from `admin_cidrs` only · Jenkins `8080` · app ports `3001–3004` |
 | IAM role + instance profile | `CloudWatchAgentServerPolicy` + read/write on the artifacts bucket. No access keys are stored on the server. |
 | S3 artifacts bucket | `devflow-artifacts-<account-id>`, private, versioned, old versions expire after 30 days |
 | Key pair | From `~/.ssh/id_ed25519.pub` |
 | `ansible/inventory.ini` | Generated with the Elastic IP, SSH user/key, bucket name and region |
 
-**Inputs** (`terraform.tfvars`): `admin_cidr` (required), `alert_email`, `aws_region` (default `ap-south-1`),
+**Inputs** (`terraform.tfvars`): `admin_cidrs` (required), `alert_email`, `aws_region` (default `ap-south-1`),
 `instance_type`, `root_volume_size`, alarm thresholds.
 
 **Outputs:** `public_ip`, `ssh_command`, `jenkins_url`, `github_webhook_url`, `app_urls`, `artifacts_bucket`,
@@ -290,7 +290,7 @@ terraform apply -var="state_bucket_name=devflow-tfstate-<unique-suffix>"
 ```bash
 cd terraform
 cp backend.hcl.example backend.hcl            # set bucket name
-cp terraform.tfvars.example terraform.tfvars  # set admin_cidr, alert_email
+cp terraform.tfvars.example terraform.tfvars  # set admin_cidrs, alert_email
 terraform init -backend-config=backend.hcl
 terraform plan
 terraform apply
