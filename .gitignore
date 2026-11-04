@@ -13,3 +13,6 @@ coverage/
 # Terraform local config
 terraform/backend.hcl
 ansible/inventory.ini
+
+# Saved terraform plans contain variable values
+*tfplan*
