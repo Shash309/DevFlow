@@ -9,3 +9,7 @@ coverage/
 *.tfvars
 # Ansible
 *.retry
+
+# Terraform local config
+terraform/backend.hcl
+ansible/inventory.ini
