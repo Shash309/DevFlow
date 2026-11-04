@@ -25,3 +25,8 @@ output "artifacts_bucket" {
 output "cloudwatch_dashboard_url" {
   value = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards/dashboard/${aws_cloudwatch_dashboard.devflow.dashboard_name}"
 }
+
+output "grafana_url" {
+  description = "Grafana dashboards (Prometheus metrics)"
+  value       = "http://${aws_eip.devflow.public_ip}:${var.grafana_port}"
+}

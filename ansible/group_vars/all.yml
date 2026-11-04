@@ -20,3 +20,8 @@ environments:
 
 cloudwatch_log_group_prefix: /devflow
 cloudwatch_log_retention_days: 14
+
+# Prometheus + Grafana stack (roles/monitoring), runs beside the app containers
+monitoring_root: /opt/monitoring
+grafana_port: 3000
+prometheus_retention: 7d

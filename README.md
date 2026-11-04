@@ -32,6 +32,7 @@ Academic project, Cloud & DevOps Engineering elective.
   - [Server configuration – Ansible](#3-server-configuration--ansible-ansible)
   - [CI/CD pipeline – Jenkins](#4-cicd-pipeline--jenkins-jenkinsfile)
   - [Monitoring – CloudWatch](#5-monitoring--cloudwatch)
+  - [Monitoring – Prometheus & Grafana](#6-monitoring--prometheus--grafana)
 - [Deployment guide](#deployment-guide)
 - [Project status](#project-status)
 - [Cost and clean-up](#cost-and-clean-up)
@@ -109,7 +110,8 @@ The mapping is defined in three places, which must stay in sync: `Jenkinsfile` (
 | Infrastructure as code | Terraform ≥ 1.10 (AWS provider 5.x) |
 | Configuration management | Ansible (tested with ansible-core 2.16) |
 | CI/CD | Jenkins LTS (Multibranch Pipeline) |
-| Containers | Docker Engine |
+| Containers | Docker Engine, Docker Compose |
+| Monitoring | Amazon CloudWatch; Prometheus, Grafana, node-exporter, cAdvisor |
 | Application | Node.js 20, Express 4, Jest + Supertest |
 | Version control | Git, GitHub |
 | OS | Ubuntu 22.04 LTS |
@@ -197,7 +199,7 @@ versioned, AES-256 encrypted and blocks all public access. The bootstrap config 
 |---|---|
 | EC2 instance | Ubuntu 22.04 (latest Canonical AMI), `t3.small`, 20 GB encrypted gp3, IMDSv2 required |
 | Elastic IP | Fixed public IP, so the GitHub webhook URL survives stop/start |
-| Security group | SSH `22` from `admin_cidrs` only · Jenkins `8080` · app ports `3001–3004` |
+| Security group | SSH `22` from `admin_cidrs` only · Jenkins `8080` · app ports `3001–3004` · Grafana `3000` |
 | IAM role + instance profile | `CloudWatchAgentServerPolicy` + read/write on the artifacts bucket. No access keys are stored on the server. |
 | S3 artifacts bucket | `devflow-artifacts-<account-id>`, private, versioned, old versions expire after 30 days |
 | Key pair | From `~/.ssh/id_ed25519.pub` |
@@ -211,7 +213,7 @@ versioned, AES-256 encrypted and blocks all public access. The bootstrap config 
 
 ### 3. Server configuration – Ansible (`ansible/`)
 
-`site.yml` applies five roles to the `devflow` host. The playbook is idempotent: re-running it only changes what has
+`site.yml` applies six roles to the `devflow` host. The playbook is idempotent: re-running it only changes what has
 drifted.
 
 | Role | What it does |
@@ -221,6 +223,7 @@ drifted.
 | `jenkins` | OpenJDK 21 and Jenkins LTS (which requires Java 21+). `jenkins` user added to the `docker` group. Waits for Jenkins to start, then prints the initial admin password. |
 | `cloudwatch` | Installs the CloudWatch agent and templates its config: CPU, memory, swap and disk metrics (namespace `DevFlow`, aggregated by `InstanceId`); ships `/var/log/syslog` and Docker container logs |
 | `app_env` | Writes `/opt/devflow/{development,testing,staging,production}.env` with `APP_ENV`, `PORT`, `HOST_PORT` and `GIT_BRANCH` |
+| `monitoring` | Prometheus + Grafana stack with Docker Compose in `/opt/monitoring` (see [Monitoring – Prometheus & Grafana](#6-monitoring--prometheus--grafana)) |
 
 Ansible does not run natively on Windows; use WSL (Ubuntu). See [ansible/README.md](ansible/README.md).
 
@@ -263,6 +266,34 @@ filter counts error lines (`Error`, `ERROR`, `error`, `Exception`) as `DevFlow/C
 
 **Dashboard `devflow`:** links to all 4 environments and Jenkins; charts for CPU, memory/swap, disk usage (gauge),
 network and container error count; alarm status; and the 50 latest container log lines.
+
+### 6. Monitoring – Prometheus & Grafana
+
+Installed by the Ansible `monitoring` role as a Docker Compose stack in `/opt/monitoring`, next to the app containers.
+CloudWatch is the AWS-native view with email alerts; Grafana is the open-source view with live per-environment charts.
+
+| Container | Role | Exposed |
+|---|---|---|
+| `prometheus` | Scrapes every 15 s, keeps 7 days of data | `127.0.0.1:9090` (server only) |
+| `node-exporter` | Server CPU, memory, swap, disk, network | internal |
+| `cadvisor` | CPU, memory and network per container | internal |
+| `grafana` | Dashboards | **`http://<public_ip>:3000`** |
+
+The **DevFlow – Environments & Server** dashboard is provisioned automatically and is Grafana's home page:
+number of app environments running, server CPU/memory/disk gauges, uptime, CPU / memory / network per environment
+(`devflow-development` … `devflow-production`), server CPU/memory/swap over time, and memory of every container
+(including Jenkins build agents). It refreshes every 10 s, so a deploy shows up live.
+
+**Access:** anyone with the URL can view dashboards (anonymous, read-only). The `admin` password is generated on the
+server on first run and is not in git:
+
+```bash
+ssh -i ~/.ssh/devflow_ed25519 ubuntu@<public_ip> 'sudo cat /opt/monitoring/grafana.env'
+```
+
+Every container has a memory limit (about 800 MB in total) so the stack cannot starve Jenkins or the apps.
+cAdvisor must be **v0.60+** (`ghcr.io/google/cadvisor`): older versions cannot read Docker 29's storage layout and
+report no per-container metrics.
 
 ---
 
@@ -331,6 +362,7 @@ Push to `develop` and check that `http://<ip>:3001` shows *Environment: developm
 | 4 | Jenkinsfile + setup docs | ✅ Written | `feature/jenkins` |
 | 5 | CloudWatch alarms, dashboard, SNS | ✅ Written, `terraform validate` passes | `feature/terraform` (+ agent config on `feature/ansible`) |
 | 6 | Apply to AWS, end-to-end demo | ✅ Done: all 4 environments deployed by Jenkins (ports 3001–3004) | `terraform/`, `ansible/`, `Jenkinsfile` |
+| 7 | Prometheus + Grafana dashboards | ✅ Done: live per-environment charts on port 3000 | `ansible/roles/monitoring/` |
 
 Not yet verified: `terraform apply` against AWS, an Ansible run on a real host, the pipeline in a running Jenkins,
 and the Docker image build (only tested via `npm test`).

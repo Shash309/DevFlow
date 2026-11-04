@@ -43,6 +43,14 @@ resource "aws_security_group" "devflow" {
     cidr_blocks = var.jenkins_cidrs
   }
 
+  ingress {
+    description = "Grafana dashboards"
+    from_port   = var.grafana_port
+    to_port     = var.grafana_port
+    protocol    = "tcp"
+    cidr_blocks = var.grafana_cidrs
+  }
+
   dynamic "ingress" {
     for_each = var.app_ports
     content {

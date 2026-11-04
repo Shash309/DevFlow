@@ -9,6 +9,7 @@ Configures the EC2 host that Terraform creates.
 | `jenkins` | Java 21, Jenkins LTS, `jenkins` user in `docker` group, prints the initial admin password |
 | `cloudwatch` | CloudWatch agent: CPU/memory/swap/disk metrics (namespace `DevFlow`), syslog and container logs (`/devflow/*` log groups) |
 | `app_env` | `/opt/devflow/<env>.env` for development, testing, staging, production |
+| `monitoring` | Prometheus, Grafana (port 3000), node-exporter and cAdvisor with Docker Compose in `/opt/monitoring`, with the DevFlow dashboard provisioned |
 
 ## Prerequisites
 

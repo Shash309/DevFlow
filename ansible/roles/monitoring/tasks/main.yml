@@ -1,0 +1,60 @@
+---
+- name: Create monitoring directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ monitoring_root }}"
+    - "{{ monitoring_root }}/grafana/provisioning/datasources"
+    - "{{ monitoring_root }}/grafana/provisioning/dashboards"
+    - "{{ monitoring_root }}/grafana/dashboards"
+
+# Generated once on the server, never stored in git
+- name: Generate Grafana admin password
+  ansible.builtin.shell: |
+    umask 077
+    printf 'GF_SECURITY_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 12)" > {{ monitoring_root }}/grafana.env
+  args:
+    creates: "{{ monitoring_root }}/grafana.env"
+
+- name: Write Prometheus config
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ monitoring_root }}/prometheus.yml"
+    mode: "0644"
+  notify: Restart monitoring stack
+
+- name: Write Grafana provisioning
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ monitoring_root }}/grafana/{{ item.dest }}"
+    mode: "0644"
+  loop:
+    - { src: datasource.yml, dest: provisioning/datasources/prometheus.yml }
+    - { src: dashboards.yml, dest: provisioning/dashboards/devflow.yml }
+    - { src: devflow-dashboard.json, dest: dashboards/devflow.json }
+  notify: Restart monitoring stack
+
+- name: Write docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ monitoring_root }}/docker-compose.yml"
+    mode: "0644"
+  notify: Restart monitoring stack
+
+- name: Start monitoring stack
+  ansible.builtin.command: docker compose up -d
+  args:
+    chdir: "{{ monitoring_root }}"
+  register: compose_up
+  changed_when: "'Started' in compose_up.stderr or 'Created' in compose_up.stderr"
+
+- name: Wait for Grafana
+  ansible.builtin.uri:
+    url: "http://localhost:{{ grafana_port }}/api/health"
+    status_code: 200
+  register: grafana_up
+  until: grafana_up.status == 200
+  retries: 30
+  delay: 5

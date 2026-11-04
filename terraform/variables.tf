@@ -73,3 +73,15 @@ variable "disk_alarm_threshold" {
   type    = number
   default = 85
 }
+
+variable "grafana_port" {
+  description = "Host port for Grafana (Prometheus stack from ansible/roles/monitoring)"
+  type        = number
+  default     = 3000
+}
+
+variable "grafana_cidrs" {
+  description = "Who can reach Grafana. Anonymous users only get read-only (Viewer) access."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
