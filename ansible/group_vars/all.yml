@@ -5,7 +5,7 @@ timezone: Asia/Kolkata
 # t3.small has 2 GB RAM; swap keeps Jenkins + 4 containers from being OOM-killed
 swap_size_mb: 2048
 
-java_package: openjdk-17-jre-headless
+java_package: openjdk-21-jre-headless
 jenkins_port: 8080
 
 app_root: /opt/devflow

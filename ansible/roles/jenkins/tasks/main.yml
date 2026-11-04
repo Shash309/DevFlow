@@ -4,11 +4,19 @@
     name: "{{ java_package }}"
     state: present
 
+# Current Jenkins LTS refuses to start on Java 17; make sure it cannot be picked up
+- name: Remove Java 17
+  ansible.builtin.apt:
+    name: openjdk-17-jre-headless
+    state: absent
+
 - name: Add Jenkins GPG key
   ansible.builtin.get_url:
-    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    # Jenkins rotates this key; check https://pkg.jenkins.io/debian-stable/ if apt reports NO_PUBKEY
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
     dest: /etc/apt/keyrings/jenkins.asc
     mode: "0644"
+    force: true
 
 - name: Add Jenkins apt repository (LTS)
   ansible.builtin.apt_repository:

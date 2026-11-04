@@ -142,7 +142,7 @@ The mapping is defined in three places, which must stay in sync: `Jenkinsfile` (
 │   └── roles/
 │       ├── common/            Packages, timezone, swap
 │       ├── docker/            Docker Engine + log rotation
-│       ├── jenkins/           Java 17 + Jenkins LTS
+│       ├── jenkins/           Java 21 + Jenkins LTS
 │       ├── cloudwatch/        CloudWatch agent + config template
 │       └── app_env/           /opt/devflow/<env>.env files
 ├── Jenkinsfile                The pipeline
@@ -218,7 +218,7 @@ drifted.
 |---|---|
 | `common` | git, curl, unzip, jq, timezone (`Asia/Kolkata`), **2 GB swap** so Jenkins and 4 containers fit in 2 GB RAM |
 | `docker` | Docker Engine, Buildx and Compose from Docker's apt repo. Container logs capped at 3 × 10 MB. `ubuntu` user added to the `docker` group. |
-| `jenkins` | OpenJDK 17 and Jenkins LTS. `jenkins` user added to the `docker` group. Waits for Jenkins to start, then prints the initial admin password. |
+| `jenkins` | OpenJDK 21 and Jenkins LTS (which requires Java 21+). `jenkins` user added to the `docker` group. Waits for Jenkins to start, then prints the initial admin password. |
 | `cloudwatch` | Installs the CloudWatch agent and templates its config: CPU, memory, swap and disk metrics (namespace `DevFlow`, aggregated by `InstanceId`); ships `/var/log/syslog` and Docker container logs |
 | `app_env` | Writes `/opt/devflow/{development,testing,staging,production}.env` with `APP_ENV`, `PORT`, `HOST_PORT` and `GIT_BRANCH` |
 

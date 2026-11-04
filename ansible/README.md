@@ -6,7 +6,7 @@ Configures the EC2 host that Terraform creates.
 |---|---|
 | `common` | git, curl, jq etc., timezone, 2 GB swap |
 | `docker` | Docker Engine from Docker's apt repo, log rotation, `ubuntu` user in `docker` group |
-| `jenkins` | Java 17, Jenkins LTS, `jenkins` user in `docker` group, prints the initial admin password |
+| `jenkins` | Java 21, Jenkins LTS, `jenkins` user in `docker` group, prints the initial admin password |
 | `cloudwatch` | CloudWatch agent: CPU/memory/swap/disk metrics (namespace `DevFlow`), syslog and container logs (`/devflow/*` log groups) |
 | `app_env` | `/opt/devflow/<env>.env` for development, testing, staging, production |
 
