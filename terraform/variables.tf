@@ -31,9 +31,9 @@ variable "ssh_private_key_path" {
   default     = "~/.ssh/id_ed25519"
 }
 
-variable "admin_cidr" {
-  description = "Your public IP in CIDR form (e.g. 203.0.113.7/32); SSH is only allowed from here"
-  type        = string
+variable "admin_cidrs" {
+  description = "Networks allowed to SSH in, e.g. [\"203.0.113.7/32\"] (your public IP + /32)"
+  type        = list(string)
 }
 
 variable "jenkins_cidrs" {

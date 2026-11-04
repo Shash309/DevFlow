@@ -3,7 +3,7 @@
 Provisions on AWS (default VPC):
 
 - EC2 Ubuntu 22.04 host (`t3.small`, 20 GB gp3, IMDSv2) with an Elastic IP
-- Security group: SSH from `admin_cidr` only, Jenkins `8080`, app ports `3001-3004`
+- Security group: SSH from `admin_cidrs` only, Jenkins `8080`, app ports `3001-3004`
 - IAM role + instance profile (CloudWatch agent, read/write to the artifacts bucket)
 - S3 artifacts bucket (versioned, private)
 - CloudWatch: `devflow` dashboard, alarms for CPU > 80%, memory > 85%, disk > 85% and failed status checks,
@@ -31,7 +31,7 @@ terraform apply -var="state_bucket_name=devflow-tfstate-<your-unique-suffix>"
 ```bash
 cd terraform
 cp backend.hcl.example backend.hcl            # set the bucket name
-cp terraform.tfvars.example terraform.tfvars  # set admin_cidr
+cp terraform.tfvars.example terraform.tfvars  # set admin_cidrs
 terraform init -backend-config=backend.hcl
 terraform plan
 terraform apply
