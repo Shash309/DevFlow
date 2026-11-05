@@ -13,7 +13,7 @@ Academic project, Cloud & DevOps Engineering elective.
 
 | Team member | Reg. no. |
 |---|---|
-| Atharva Bhutada | RA231102601008 |
+| Atharva Bhutada | RA2311026010089 |
 | Shashwat Sharma | RA2311026010121 |
 | Prajjwal Rawat | RA2311026010224 |
 
