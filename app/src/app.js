@@ -6,14 +6,12 @@ const BUILD_NUMBER = process.env.BUILD_NUMBER || 'dev';
 const startedAt = Date.now();
 
 const app = express();
-
-#hello
   
 app.get('/', (req, res) => {
   res.send(`<!doctype html>
 <html><head><title>DevFlow - ${APP_ENV}</title></head>
 <body style="font-family:sans-serif;text-align:center;margin-top:15vh">
-  <h1>DevFlow</h1>
+  <h1>-DevFlow-</h1>
   <h2>Environment: ${APP_ENV}</h2>
   <p>Version ${version} &middot; Build #${BUILD_NUMBER}</p>
 </body></html>`);
