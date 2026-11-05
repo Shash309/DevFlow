@@ -1,0 +1,4 @@
+environment: development
+replicaCount: 1
+service:
+  nodePort: 30001

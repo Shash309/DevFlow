@@ -1,0 +1,14 @@
+{{- if or .Values.autoscaling.enabled (gt (int .Values.replicaCount) 1) }}
+# Keeps at least one app pod running during voluntary disruptions (node drain, upgrades)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: devflow-app
+  labels:
+    {{- include "devflow.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: devflow-app
+{{- end }}

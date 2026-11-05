@@ -1,0 +1,10 @@
+environment: production
+service:
+  nodePort: 30004
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+postgres:
+  storage: 2Gi

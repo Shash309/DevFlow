@@ -1,0 +1,4 @@
+environment: testing
+replicaCount: 1
+service:
+  nodePort: 30002

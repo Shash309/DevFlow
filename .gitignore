@@ -16,3 +16,12 @@ ansible/inventory.ini
 
 # Saved terraform plans contain variable values
 *tfplan*
+
+# DevFlow local lab: generated passwords, tokens and kubeconfig
+ci/.env
+ci/secrets/
+
+# Test and analysis output
+app/reports/
+.scannerwork/
+health.json

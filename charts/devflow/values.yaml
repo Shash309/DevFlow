@@ -1,0 +1,36 @@
+# Defaults; each environment overrides these in values-<env>.yaml
+
+environment: development
+
+image:
+  repository: localhost:5000/devflow
+  tag: latest
+  pullPolicy: IfNotPresent
+
+buildNumber: "dev"
+
+replicaCount: 1
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30001   # reachable at http://localhost:<nodePort>
+
+resources:
+  requests: { cpu: 50m, memory: 64Mi }
+  limits:   { cpu: 250m, memory: 160Mi }
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 70
+
+postgres:
+  image: postgres:16-alpine
+  database: devflow
+  user: devflow
+  storage: 1Gi
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits:   { cpu: 300m, memory: 256Mi }

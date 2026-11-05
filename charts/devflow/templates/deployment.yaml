@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devflow-app
+  labels:
+    {{- include "devflow.labels" . | nindent 4 }}
+    app.kubernetes.io/name: devflow-app
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0   # zero downtime: start a new pod before stopping an old one
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: devflow-app
+  template:
+    metadata:
+      labels:
+        {{- include "devflow.labels" . | nindent 8 }}
+        app.kubernetes.io/name: devflow-app
+      annotations:
+        # Prometheus discovers and scrapes pods with these annotations
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: /metrics
+        # Restart pods when the config changes
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: devflow-config
+          env:
+            - name: BUILD_NUMBER
+              value: {{ .Values.buildNumber | quote }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef: { name: devflow-db, key: password }
+          startupProbe:
+            httpGet: { path: /live, port: http }
+            periodSeconds: 2
+            failureThreshold: 45
+          livenessProbe:
+            httpGet: { path: /live, port: http }
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

@@ -1,0 +1,63 @@
+# CI tools: Jenkins, SonarQube and a private Docker registry.
+# Started by scripts/setup.ps1 (docker compose --env-file ci/.env -f ci/docker-compose.yml up -d)
+name: devflow-ci
+
+services:
+  registry:
+    image: registry:2
+    container_name: devflow-registry
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry-data:/var/lib/registry
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: devflow-sonarqube
+    restart: unless-stopped
+    environment:
+      # Lets SonarQube's embedded Elasticsearch run without changing the host's vm.max_map_count
+      SONAR_SEARCH_JAVAADDITIONALOPTS: "-Dnode.store.allow_mmap=false"
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+    networks: [ci]
+
+  jenkins:
+    build: ./jenkins
+    image: devflow-jenkins:local
+    container_name: devflow-jenkins
+    restart: unless-stopped
+    # Root so the pipeline can use the host's Docker socket. Fine for a local lab, not for shared servers.
+    user: root
+    environment:
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD}
+      SONAR_TOKEN: ${SONAR_TOKEN}
+      DEVFLOW_REPO_URL: ${DEVFLOW_REPO_URL:-https://github.com/Shash309/DevFlow.git}
+      KUBECONFIG: /var/jenkins_config/kubeconfig
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins/casc.yaml:/var/jenkins_config/casc.yaml:ro
+      - ./secrets/kubeconfig:/var/jenkins_config/kubeconfig:ro
+    depends_on: [sonarqube, registry]
+    networks: [ci]
+
+networks:
+  ci:
+    name: devflow-ci
+
+volumes:
+  registry-data:
+  sonarqube-data:
+  sonarqube-extensions:
+  sonarqube-logs:
+  jenkins-home:
+    name: devflow-jenkins-home

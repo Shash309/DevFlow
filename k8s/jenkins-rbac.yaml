@@ -1,0 +1,73 @@
+# Least privilege for the pipeline: Jenkins deploys with this ServiceAccount, which may
+# only manage resources inside the four environment namespaces, nothing cluster-wide.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-deployer
+  namespace: devflow-ci
+---
+# Long-lived token for the ServiceAccount; scripts/setup.ps1 puts it in Jenkins' kubeconfig
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jenkins-deployer-token
+  namespace: devflow-ci
+  annotations:
+    kubernetes.io/service-account.name: jenkins-deployer
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-deployer
+  namespace: development
+subjects:
+  - kind: ServiceAccount
+    name: jenkins-deployer
+    namespace: devflow-ci
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin   # built-in role, granted only inside this namespace
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-deployer
+  namespace: testing
+subjects:
+  - kind: ServiceAccount
+    name: jenkins-deployer
+    namespace: devflow-ci
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-deployer
+  namespace: staging
+subjects:
+  - kind: ServiceAccount
+    name: jenkins-deployer
+    namespace: devflow-ci
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-deployer
+  namespace: production
+subjects:
+  - kind: ServiceAccount
+    name: jenkins-deployer
+    namespace: devflow-ci
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin

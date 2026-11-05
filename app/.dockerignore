@@ -1,4 +1,7 @@
 node_modules
 coverage
+reports
 tests
+.scannerwork
+eslint.config.js
 npm-debug.log

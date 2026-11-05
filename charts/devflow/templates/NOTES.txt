@@ -1,0 +1,6 @@
+DevFlow {{ .Values.environment }} deployed (image {{ .Values.image.repository }}:{{ .Values.image.tag }}).
+
+  App:     http://localhost:{{ .Values.service.nodePort }}
+  Health:  http://localhost:{{ .Values.service.nodePort }}/health
+
+  kubectl -n {{ .Release.Namespace }} get pods
