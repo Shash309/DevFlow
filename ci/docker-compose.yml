@@ -41,7 +41,7 @@ services:
       DEVFLOW_REPO_URL: ${DEVFLOW_REPO_URL:-https://github.com/Shash309/DevFlow.git}
       KUBECONFIG: /var/jenkins_config/kubeconfig
     ports:
-      - "8080:8080"
+      - "8090:8080"   # host 8090: port 8080 is often taken on the host
     volumes:
       - jenkins-home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock

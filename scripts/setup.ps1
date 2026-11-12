@@ -18,7 +18,9 @@ param(
     [string]$RepoUrl = 'https://github.com/Shash309/DevFlow.git'
 )
 
-$ErrorActionPreference = 'Stop'
+# 'Continue': in Windows PowerShell 5.1, 'Stop' turns any stderr line from kubectl/docker into a fatal
+# error, even for expected "not found" checks. Failures are caught explicitly with Invoke-Native instead.
+$ErrorActionPreference = 'Continue'
 $Root = Split-Path -Parent $PSScriptRoot
 $CiDir = Join-Path $Root 'ci'
 $EnvFile = Join-Path $CiDir '.env'
@@ -32,7 +34,8 @@ function New-Password([int]$Length = 20) {
     $chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'.ToCharArray()
     $bytes = New-Object byte[] $Length
     [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-    -join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] })
+    # Suffix guarantees upper, lower, digit and special characters (SonarQube's password policy)
+    (-join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] })) + 'Aa1!'
 }
 
 function Read-EnvFile {
@@ -195,14 +198,14 @@ Step 'Building and starting Jenkins (configured as code)'
 Invoke-Native { docker @compose up -d --build jenkins } 'docker compose (jenkins)'
 Write-Host '    Waiting for Jenkins...'
 Wait-Until {
-    try { Invoke-WebRequest 'http://localhost:8080/login' -UseBasicParsing -TimeoutSec 5 | Out-Null; $true } catch { $false }
+    try { Invoke-WebRequest 'http://localhost:8090/login' -UseBasicParsing -TimeoutSec 5 | Out-Null; $true } catch { $false }
 } 'Jenkins' 600
 
 # ---------------------------------------------------------------------------
 Step 'Done'
 @"
 
-  Jenkins     http://localhost:8080    user: admin   password: JENKINS_ADMIN_PASSWORD in ci\.env
+  Jenkins     http://localhost:8090    user: admin   password: JENKINS_ADMIN_PASSWORD in ci\.env
   SonarQube   http://localhost:9000    user: admin   password: SONAR_ADMIN_PASSWORD in ci\.env
   Grafana     http://localhost:30300   (view without login; admin password: GRAFANA_ADMIN_PASSWORD in ci\.env)
   Prometheus  http://localhost:30090
