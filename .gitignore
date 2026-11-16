@@ -25,3 +25,4 @@ ci/secrets/
 app/reports/
 .scannerwork/
 health.json
+report-screenshots/

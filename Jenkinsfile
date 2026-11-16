@@ -125,8 +125,24 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    // SonarQube calls back Jenkins' webhook; the build fails if the gate fails
-                    waitForQualityGate abortPipeline: true
+                    withSonarQubeEnv('sonarqube') {
+                        // Ask SonarQube for the result of this analysis (newer SonarQube blocks
+                        // webhooks to private addresses, so Jenkins polls instead of waiting for one)
+                        sh '''
+                            set -e
+                            TASK_URL=$(grep '^ceTaskUrl=' .scannerwork/report-task.txt | cut -d= -f2-)
+                            while :; do
+                                STATUS=$(curl -sf -u "$SONAR_AUTH_TOKEN:" "$TASK_URL" | jq -r .task.status)
+                                [ "$STATUS" = SUCCESS ] && break
+                                case "$STATUS" in FAILED|CANCELED) echo "Analysis $STATUS"; exit 1;; esac
+                                sleep 3
+                            done
+                            ANALYSIS=$(curl -sf -u "$SONAR_AUTH_TOKEN:" "$TASK_URL" | jq -r .task.analysisId)
+                            GATE=$(curl -sf -u "$SONAR_AUTH_TOKEN:" "$SONAR_HOST_URL/api/qualitygates/project_status?analysisId=$ANALYSIS" | jq -r .projectStatus.status)
+                            echo "Quality Gate: $GATE"
+                            [ "$GATE" = OK ]
+                        '''
+                    }
                 }
             }
         }
