@@ -116,7 +116,8 @@ pipeline {
                           --volumes-from devflow-jenkins -w "$WORKSPACE" \
                           -e SONAR_HOST_URL -e SONAR_TOKEN="$SONAR_AUTH_TOKEN" \
                           sonarsource/sonar-scanner-cli:latest \
-                          -Dsonar.projectVersion="$BUILD_NUMBER"
+                          -Dsonar.projectVersion="$BUILD_NUMBER" \
+                          -Dsonar.working.directory="$WORKSPACE/.scannerwork"
                     '''
                 }
             }
@@ -131,6 +132,7 @@ pipeline {
                         sh '''
                             set -e
                             TASK_URL=$(grep '^ceTaskUrl=' .scannerwork/report-task.txt | cut -d= -f2-)
+                            [ -n "$TASK_URL" ] || { echo "No SonarQube report found"; exit 1; }
                             while :; do
                                 STATUS=$(curl -sf -u "$SONAR_AUTH_TOKEN:" "$TASK_URL" | jq -r .task.status)
                                 [ "$STATUS" = SUCCESS ] && break
