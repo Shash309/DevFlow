@@ -72,7 +72,7 @@ function createApp({ repo, config = {} }) {
   }));
 
   // Liveness: the process is running. Does not check the database, so a DB outage does not restart pods.
-  app.get('/live', (_req, res) => res.json({ status: 'UP' }));
+  app.get('/live', (_req, res) => res.json({ status: 'OK' }));
 
   // Readiness: the app can serve traffic, which needs the database.
   app.get('/health', async (_req, res) => {
